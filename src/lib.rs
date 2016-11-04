@@ -145,7 +145,7 @@ pub fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
 
 // fn(A) -> (A, A)
 pub fn new_ret_closure() -> Box<Fn(u32) -> u32> {
-    Box::new(move |x| x)
+    Box::new(move |x| x + 2)
 }
 
 pub fn new_index_call_iter_test() {}
@@ -275,6 +275,11 @@ mod tests {
                        .into_iter()
                        .map(|x| x + 1)
                        .collect::<Vec<_>>(),
-                   vec![2, 3, 4]);   //new_ret_closure()
+                   vec![2, 3, 4]);
+        assert_eq!(vec![1, 2, 3]
+                       .into_iter()
+                       .map(&*new_ret_closure())
+                       .collect::<Vec<_>>(),
+                   vec![3, 4, 5]);
     }
 }
