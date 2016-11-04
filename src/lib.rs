@@ -138,22 +138,24 @@ impl<CxtT: IndexCallable> ExactSizeIterator for IndexCallIterator<CxtT>
     //     Map{iter: self, f: f}
     // }
 
-fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
+pub fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
 where F: FnMut(c_uint) -> c_uint
 {
     (0..len).map(f)
 }
 
+pub fn new_index_call_iter_test() {
+
+}
 
 #[cfg(test)]
 mod tests {
+    use std::os::raw::{c_int, c_uint};
+    use super::*;
+
     #[test]
     fn it_works() {
     }
-
-
-    use std::os::raw::{c_int, c_uint};
-    use super::*;
 
     struct TestIndexCallableProvider {
         cxtu: c_uint,
@@ -259,6 +261,13 @@ mod tests {
 
     #[test]
     fn test_new_index_call_iter(){
-        //new_index_call_iter(0, |x| x)
+        assert_eq!(
+            new_index_call_iter(0, |x| x).collect::<Vec<_>>(),
+            vec![] );
+        assert_eq!(
+            new_index_call_iter(3, |x| x).collect::<Vec<_>>(),
+            vec![0,1,2] );
+
+        new_index_call_iter_test()
     }
 }
