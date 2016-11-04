@@ -88,11 +88,11 @@ impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
     }
 }
 
-pub fn new_index_call_iterator<FLen, F, T>
+pub fn new_index_call_iterator<'a, FLen, F, T>
     (f_len: FLen,
      f: F)
-     -> Box<ExactSizeIterator<Item = T>>
-    where F: Fn(c_uint) -> T + 'static,
+     -> Box<ExactSizeIterator<Item = T> + 'a>
+    where F: Fn(c_uint) -> T + 'a,
           FLen: Fn() -> c_uint,
 {
     Box::new((0..f_len()).map(f))
@@ -116,11 +116,11 @@ impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
     }
 }
 
-pub fn new_index_call_iterator_check_positive<FLen, F, T>
+pub fn new_index_call_iterator_check_positive<'a, FLen, F, T>
     (f_len: FLen,
      f: F)
-     -> Option<Box<ExactSizeIterator<Item = T>>>
-    where F: Fn(c_int) -> T + 'static,
+     -> Option<Box<ExactSizeIterator<Item = T> + 'a>>
+    where F: Fn(c_int) -> T + 'a,
           FLen: Fn() -> c_int,
 {
     let len = f_len();
