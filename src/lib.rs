@@ -116,6 +116,22 @@ impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
     }
 }
 
+pub fn new_index_call_iterator_check_positive<FLen, F, T>
+    (f_len: FLen,
+     f: F)
+     -> Option<Box<ExactSizeIterator<Item = T>>>
+    where F: Fn(c_int) -> T + 'static,
+          FLen: Fn() -> c_int,
+{
+    let len = f_len();
+    if len >= 0 {
+        Some(Box::new((0..len).map(move |x| f(x))))
+    } else {
+        assert_eq!(len, -1); // only expect -1 as invalid
+        None
+    }
+}
+
 impl<CxtT: IndexCallable> Iterator for IndexCallIterator<CxtT>
     where CxtT::ItemNum: Indexable,
 {
@@ -314,14 +330,12 @@ mod tests {
                                     |x| x as i32 /* call FFI for item */)
         }
 
-        // fn get_signed_children
-        //     (self)
-        //      -> Option<IndexCallIterator<TestIndexCallableOption>> {
-        //     let idx_callable = TestIndexCallableOption {
-        //         cxt: self.cxti,
-        //     };
-        //     IndexCallIterator::new_check_positive(idx_callable)
-        // }
+        fn get_signed_children
+            (self)
+             -> Option<Box<ExactSizeIterator<Item = i32>>> {
+            new_index_call_iterator_check_positive(|| self.cxti, // call FFI for length
+                                                   |x| x as i32 /* call FFI for item */)
+        }
     }
 
     #[test]
@@ -338,6 +352,31 @@ mod tests {
         assert_eq!(collected, vec![0, 1]);
         assert_eq!(len, 2);
     }
+
+    #[test]
+    fn test_simple_optional_index_call_iterator() {
+        let provider = SimpleTestIndexCallableProvider {
+            cxti: 2,
+            cxtu: 3,
+        };
+        let provider_no_children = SimpleTestIndexCallableProvider {
+            cxti: -1,
+            cxtu: 3,
+        };
+
+        let values = provider.get_signed_children();
+        let not_values = provider_no_children.get_signed_children();
+        let len = values.as_ref().map(|x| x.len());
+        let collected = values.map(|x| x.collect::<Vec<_>>());
+
+        assert_eq!(collected, Some(vec![0, 1]));
+        assert_eq!(len, Some(2));
+        assert!(not_values.is_none());
+    }
+
+    // Helper code to develop
+    //
+
 
     #[test]
     fn test_new_index_call_iterator() {
