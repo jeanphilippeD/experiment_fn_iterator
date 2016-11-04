@@ -1,4 +1,3 @@
-
 use std::iter::Map;
 use std::ops::FnMut;
 use std::ops::Range;
@@ -144,6 +143,11 @@ pub fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
     (0..len).map(f)
 }
 
+// fn(A) -> (A, A)
+pub fn new_ret_closure() -> Box<Fn(u32) -> u32> {
+    Box::new(move |x| x)
+}
+
 pub fn new_index_call_iter_test() {}
 
 #[cfg(test)]
@@ -263,5 +267,14 @@ mod tests {
                    vec![0, 1, 2]);
 
         new_index_call_iter_test()
+    }
+
+    #[test]
+    fn test_new_ret_closure() {
+        assert_eq!(vec![1, 2, 3]
+                       .into_iter()
+                       .map(|x| x + 1)
+                       .collect::<Vec<_>>(),
+                   vec![2, 3, 4]);   //new_ret_closure()
     }
 }
