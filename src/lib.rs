@@ -90,8 +90,8 @@ impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
 
 pub fn new_index_call_iterator<FLen, F, T>(f_len: FLen,
                                             f: F)
-                                            -> Box<Iterator<Item = u32>>
-    where F: Fn(c_uint) -> u32 + 'static,
+                                            -> Box<Iterator<Item = T>>
+    where F: Fn(c_uint) -> T + 'static,
           FLen: Fn() -> c_uint,
           T: Clone
 {
