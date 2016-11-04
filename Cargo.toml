@@ -1,0 +1,6 @@
+[package]
+name = "fn_iterator"
+version = "0.1.0"
+authors = ["Jean-Philippe DUFRAIGNE <j.dufraigne@gmail.com>"]
+
+[dependencies]
