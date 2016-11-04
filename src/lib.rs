@@ -143,6 +143,15 @@ pub fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
     (0..len).map(f)
 }
 
+pub fn new_index_call_iter_boxed<F>(len: c_uint,
+                                    f: F)
+                                    -> Box<Iterator<Item = u32>>
+    where F: Fn(c_uint) -> c_uint + 'static,
+{
+    Box::new((0..len).map(move |x| f(x)))
+}
+
+
 // fn(A) -> (A, A)
 pub fn new_ret_closure() -> Box<Fn(u32) -> u32> {
     Box::new(move |x| x + 2)
@@ -276,8 +285,14 @@ mod tests {
         assert_eq!(new_index_call_iter(0, |x| x).collect::<Vec<_>>(), vec![]);
         assert_eq!(new_index_call_iter(3, |x| x).collect::<Vec<_>>(),
                    vec![0, 1, 2]);
+    }
 
-        new_index_call_iter_test()
+    #[test]
+    fn test_new_index_call_iter_boxed() {
+        assert_eq!(new_index_call_iter_boxed(0, |x| x).collect::<Vec<_>>(),
+                   vec![]);
+        assert_eq!(new_index_call_iter_boxed(3, |x| x).collect::<Vec<_>>(),
+                   vec![0, 1, 2]);
     }
 
     // #[test]
