@@ -95,7 +95,7 @@ pub fn new_index_call_iterator<FLen, F, T>
     where F: Fn(c_uint) -> T + 'static,
           FLen: Fn() -> c_uint,
 {
-    Box::new((0..f_len()).map(move |x| f(x)))
+    Box::new((0..f_len()).map(f))
 }
 
 impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
@@ -125,7 +125,7 @@ pub fn new_index_call_iterator_check_positive<FLen, F, T>
 {
     let len = f_len();
     if len >= 0 {
-        Some(Box::new((0..len).map(move |x| f(x))))
+        Some(Box::new((0..len).map(f)))
     } else {
         assert_eq!(len, -1); // only expect -1 as invalid
         None
