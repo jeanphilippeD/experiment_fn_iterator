@@ -88,6 +88,14 @@ impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
     }
 }
 
+pub fn new_index_call_iterator<FLen, F>(f_len: FLen,
+                                            f: F)
+                                            -> Box<Iterator<Item = u32>>
+    where F: Fn(c_uint) -> u32 + 'static,
+          FLen: Fn() -> c_uint,
+{
+    Box::new((0..f_len()).map(move |x| f(x)))
+}
 
 pub fn new_index_call_iterator_u32<FLen, F>(f_len: FLen,
                                             f: F)
@@ -289,6 +297,16 @@ mod tests {
         assert_eq!(collected, Some(vec![0, 1]));
         assert_eq!(len, Some(2));
         assert!(not_values.is_none());
+    }
+
+    #[test]
+    fn test_new_index_call_iterator() {
+        assert_eq!(new_index_call_iterator(|| 0 as u32, |x| (x + 10))
+                       .collect::<Vec<_>>(),
+                   vec![]);
+        assert_eq!(new_index_call_iterator(|| 3 as u32, |x| (x + 10))
+                       .collect::<Vec<_>>(),
+                   vec![10, 11, 12]);
     }
 
     #[test]
