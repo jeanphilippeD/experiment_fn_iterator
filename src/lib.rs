@@ -150,6 +150,12 @@ pub fn new_ret_closure() -> Box<Fn(u32) -> u32> {
 
 pub fn new_index_call_iter_test() {}
 
+pub fn cipher_iter<'a>(data: &'a Vec<u8>,
+                       key: u8)
+                       -> Box<Iterator<Item = u8> + 'a> {
+    Box::new(data.iter().map(move |&p| p ^ key))
+}
+
 #[cfg(test)]
 mod tests {
     use std::os::raw::{c_int, c_uint};
@@ -281,5 +287,11 @@ mod tests {
                        .map(&*new_ret_closure())
                        .collect::<Vec<_>>(),
                    vec![3, 4, 5]);
+    }
+
+    #[test]
+    fn test_cipher_iter() {
+        let data = vec![1, 2, 3];
+        assert_eq!(cipher_iter(&data, 10).collect::<Vec<_>>(), vec![11, 8, 9]);
     }
 }
