@@ -88,24 +88,15 @@ impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
     }
 }
 
-pub fn new_index_call_iterator<FLen, F, T>(f_len: FLen,
-                                           f: F)
-                                           -> Box<Iterator<Item = T>>
+pub fn new_index_call_iterator<FLen, F, T>
+    (f_len: FLen,
+     f: F)
+     -> Box<ExactSizeIterator<Item = T>>
     where F: Fn(c_uint) -> T + 'static,
           FLen: Fn() -> c_uint,
 {
     Box::new((0..f_len()).map(move |x| f(x)))
 }
-
-pub fn new_index_call_iterator_u32<FLen, F>(f_len: FLen,
-                                            f: F)
-                                            -> Box<Iterator<Item = u32>>
-    where F: Fn(c_uint) -> c_uint + 'static,
-          FLen: Fn() -> c_uint,
-{
-    Box::new((0..f_len()).map(move |x| f(x)))
-}
-
 
 impl<CxtT: IndexCallable> IndexCallIterator<CxtT>
     where CxtT::ItemNum: SignedIndexable,
@@ -155,6 +146,15 @@ impl<CxtT: IndexCallable> ExactSizeIterator for IndexCallIterator<CxtT>
 // {
 //     Map{iter: self, f: f}
 // }
+
+pub fn new_index_call_iterator_u32<FLen, F>(f_len: FLen,
+                                            f: F)
+                                            -> Box<Iterator<Item = u32>>
+    where F: Fn(c_uint) -> c_uint + 'static,
+          FLen: Fn() -> c_uint,
+{
+    Box::new((0..f_len()).map(move |x| f(x)))
+}
 
 pub fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
     where F: Fn(c_uint) -> c_uint,
@@ -297,6 +297,46 @@ mod tests {
         assert_eq!(collected, Some(vec![0, 1]));
         assert_eq!(len, Some(2));
         assert!(not_values.is_none());
+    }
+
+
+    // A Simpler version
+    //
+
+    struct SimpleTestIndexCallableProvider {
+        cxtu: c_uint,
+        cxti: c_int,
+    }
+
+    impl SimpleTestIndexCallableProvider {
+        fn get_unsigned_children(self) -> Box<ExactSizeIterator<Item = i32>> {
+            new_index_call_iterator(|| self.cxtu, // call FFI for length
+                                    |x| x as i32 /* call FFI for item */)
+        }
+
+        // fn get_signed_children
+        //     (self)
+        //      -> Option<IndexCallIterator<TestIndexCallableOption>> {
+        //     let idx_callable = TestIndexCallableOption {
+        //         cxt: self.cxti,
+        //     };
+        //     IndexCallIterator::new_check_positive(idx_callable)
+        // }
+    }
+
+    #[test]
+    fn test_simple_index_call_iterator() {
+        let provider = SimpleTestIndexCallableProvider {
+            cxti: 3,
+            cxtu: 2,
+        };
+
+        let values = provider.get_unsigned_children();
+        let len = values.len();
+        let collected = values.collect::<Vec<_>>();
+
+        assert_eq!(collected, vec![0, 1]);
+        assert_eq!(len, 2);
     }
 
     #[test]
