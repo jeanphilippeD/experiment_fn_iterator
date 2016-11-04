@@ -138,7 +138,7 @@ impl<CxtT: IndexCallable> ExactSizeIterator for IndexCallIterator<CxtT>
 // }
 
 pub fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
-    where F: FnMut(c_uint) -> c_uint,
+    where F: Fn(c_uint) -> c_uint,
 {
     (0..len).map(f)
 }
@@ -154,6 +154,11 @@ pub fn cipher_iter<'a>(data: &'a Vec<u8>,
                        key: u8)
                        -> Box<Iterator<Item = u8> + 'a> {
     Box::new(data.iter().map(move |&p| p ^ key))
+}
+
+pub fn cipher_iter_with_data_and_key() -> Box<Iterator<Item = u8>> {
+    let key: u8 = 10;
+    Box::new((0..6).map(move |p| p ^ key))
 }
 
 #[cfg(test)]
@@ -275,6 +280,12 @@ mod tests {
         new_index_call_iter_test()
     }
 
+    // #[test]
+    // fn test_new_index_call_iter_with_closuer_boxed() {
+    //     let data = vec![1, 2, 3];
+    //     assert_eq!(cipher_iter(&data, 10).collect::<Vec<_>>(), vec![11, 8, 9]);
+    // }
+
     #[test]
     fn test_new_ret_closure() {
         assert_eq!(vec![1, 2, 3]
@@ -293,5 +304,11 @@ mod tests {
     fn test_cipher_iter() {
         let data = vec![1, 2, 3];
         assert_eq!(cipher_iter(&data, 10).collect::<Vec<_>>(), vec![11, 8, 9]);
+    }
+
+    #[test]
+    fn test_cipher_iter_keep_data_and_key() {
+        assert_eq!(cipher_iter_with_data_and_key().collect::<Vec<_>>(),
+                   vec![10, 11, 8, 9, 14, 15]);
     }
 }
