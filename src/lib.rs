@@ -1,8 +1,8 @@
 
-use std::os::raw::{c_int, c_uint};
+use std::iter::Map;
 use std::ops::FnMut;
 use std::ops::Range;
-use std::iter::Map;
+use std::os::raw::{c_int, c_uint};
 
 
 /// Provide index results.
@@ -132,21 +132,19 @@ impl<CxtT: IndexCallable> ExactSizeIterator for IndexCallIterator<CxtT>
     }
 }
 
-    // fn map<B, F>(self, f: F) -> Map<Self, F> where
-    //     Self: Sized, F: FnMut(Self::Item) -> B,
-    // {
-    //     Map{iter: self, f: f}
-    // }
+// fn map<B, F>(self, f: F) -> Map<Self, F> where
+//     Self: Sized, F: FnMut(Self::Item) -> B,
+// {
+//     Map{iter: self, f: f}
+// }
 
 pub fn new_index_call_iter<F>(len: c_uint, f: F) -> Map<Range<u32>, F>
-where F: FnMut(c_uint) -> c_uint
+    where F: FnMut(c_uint) -> c_uint,
 {
     (0..len).map(f)
 }
 
-pub fn new_index_call_iter_test() {
-
-}
+pub fn new_index_call_iter_test() {}
 
 #[cfg(test)]
 mod tests {
@@ -154,8 +152,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-    }
+    fn it_works() {}
 
     struct TestIndexCallableProvider {
         cxtu: c_uint,
@@ -260,13 +257,10 @@ mod tests {
     }
 
     #[test]
-    fn test_new_index_call_iter(){
-        assert_eq!(
-            new_index_call_iter(0, |x| x).collect::<Vec<_>>(),
-            vec![] );
-        assert_eq!(
-            new_index_call_iter(3, |x| x).collect::<Vec<_>>(),
-            vec![0,1,2] );
+    fn test_new_index_call_iter() {
+        assert_eq!(new_index_call_iter(0, |x| x).collect::<Vec<_>>(), vec![]);
+        assert_eq!(new_index_call_iter(3, |x| x).collect::<Vec<_>>(),
+                   vec![0, 1, 2]);
 
         new_index_call_iter_test()
     }
